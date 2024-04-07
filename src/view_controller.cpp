@@ -54,9 +54,9 @@ static void s_draw(void)
         display->setTextSize(2);
         display->setCursor(15, 15);
         display->setTextColor(SSD1306_WHITE, SSD1306_BLACK);
-        display->printf(F("%2d.%d "), settings_get()->hold_timer.duration / 1000, (settings_get()->hold_timer.duration % 1000) / 100);
+        display->printf(F("%3d"), settings_get()->controller.target);
         display->setCursor(SCREEN_WIDTH / 2 + 2, 15);
-        display->print("s");
+        display->print(" C");
     }
     else
     {
@@ -79,7 +79,7 @@ static view_t s_draw_cb(view_prescalers_t *prescalers)
         display->setTextSize(1);
         display->setTextColor(SSD1306_WHITE);
         display->setCursor(0, 0);
-        display->println(F("Set hold timer"));
+        display->println(F("Set temperature"));
         display->display();
         s_draw();
     }
@@ -88,7 +88,7 @@ static view_t s_draw_cb(view_prescalers_t *prescalers)
         prescalers->do50 = false;
         s_draw();
     }
-    return eVIEW_TIMER;
+    return eVIEW_TEMP;
 }
 
 static view_t s_button_type_event_cb(struct lwbtn *lw, struct lwbtn_btn *btn, lwbtn_evt_t evt)
@@ -99,30 +99,30 @@ static view_t s_button_type_event_cb(struct lwbtn *lw, struct lwbtn_btn *btn, lw
     {
         if (type == BTN_UP)
         {
-            INC_WITH_VAL_TO_MAX(settings_get()->hold_timer.duration, 11000, 100);
+            INC_WITH_VAL_TO_MAX(settings_get()->controller.target, 250, 1);
         }
         else if (type == BTN_DOWN)
         {
-            DEC_WITH_VAL_TO_MIN(settings_get()->hold_timer.duration, 100, 100);
+            DEC_WITH_VAL_TO_MIN(settings_get()->controller.target, 50, 1);
         }
         else if (type == BTN_SELECT)
         {
-            return eVIEW_TEMP;
+            return eVIEW_TIMER;
         }
     }
     else if (evt == LWBTN_EVT_KEEPALIVE)
     {
         if (type == BTN_UP)
         {
-            INC_WITH_VAL_TO_MAX(settings_get()->hold_timer.duration, 11000, 100);
+            INC_WITH_VAL_TO_MAX(settings_get()->controller.target, 250, 1);
         }
         else if (type == BTN_DOWN)
         {
-            DEC_WITH_VAL_TO_MIN(settings_get()->hold_timer.duration, 100, 100);
+            DEC_WITH_VAL_TO_MIN(settings_get()->controller.target, 50, 1);
         }
     }
 
-    return eVIEW_TIMER;
+    return eVIEW_TEMP;
 }
 
 static void s_on_exit_cb(void)
@@ -132,7 +132,7 @@ static void s_on_exit_cb(void)
 /* ================================================================================================================== */
 /* [FUNC] Functions implementations                                                                                   */
 /* ================================================================================================================== */
-view_callbacks_t timer_view_set_callbacks()
+view_callbacks_t controller_view_set_callbacks()
 {
     return (view_callbacks_t){
         .view_init = s_init,

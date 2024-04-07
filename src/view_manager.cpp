@@ -1,13 +1,13 @@
+#include <Arduino.h>
+#include <Wire.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <Arduino.h>
-#include <Wire.h>
 
-#include "view.h"
 #include "button.h"
-#include "pinmap.h"
 #include "graphics.h"
+#include "pinmap.h"
+#include "view.h"
 
 typedef struct
 {
@@ -24,13 +24,6 @@ view_data_t view_data;
 
 static view_callbacks_t s_get_callbacks(view_t view);
 
-/**
- * @brief Switch to a new view
- *
- * @param new_view
- */
-static void s_switch_view(view_t new_view);
-
 // =======================================================0
 static view_callbacks_t s_get_callbacks(view_t view)
 {
@@ -38,24 +31,11 @@ static view_callbacks_t s_get_callbacks(view_t view)
     {
     case eVIEW_TIMER:
         return timer_view_set_callbacks();
+    case eVIEW_TEMP:
+        return controller_view_set_callbacks();
     default:
         return timer_view_set_callbacks();
     }
-}
-
-static void s_switch_view(view_t new_view)
-{
-    if (self.callbacks.view_on_exit_cb != NULL)
-    {
-        self.callbacks.view_on_exit_cb();
-    }
-
-    // Reset state (and add init)
-    memset(&view_data, 0, sizeof(view_data));
-    view_data.prescalers.doInit = true;
-
-    self.callbacks = s_get_callbacks(new_view);
-    self.current_view = new_view;
 }
 
 // =====================================================
@@ -63,7 +43,6 @@ static void s_switch_view(view_t new_view)
 void view_init()
 {
     self.display = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-    self.current_view = eVIEW_TIMER;
 
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     if (!self.display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
@@ -76,10 +55,7 @@ void view_init()
 
     // Show startup screen
     self.display.clearDisplay();
-    self.display.drawBitmap(
-        0,
-        0,
-        seel2, LOGO_WIDTH, LOGO_HEIGHT, 1);
+    self.display.drawBitmap(0, 0, seel2, LOGO_WIDTH, LOGO_HEIGHT, 1);
     self.display.setTextSize(2);
     self.display.setTextColor(SSD1306_WHITE);
     self.display.setCursor(40, 10);
@@ -87,7 +63,7 @@ void view_init()
     self.display.display();
     delay(500);
 
-    s_switch_view(eVIEW_TIMER);
+    view_switch(eVIEW_TIMER);
 }
 
 void view_update()
@@ -121,22 +97,45 @@ void view_update()
         view_data.prescalers.do1_2 = true;
     }
 
-    self.callbacks.view_draw_cb(&view_data.prescalers);
+    if (self.callbacks.view_draw_cb != NULL)
+    {
+        view_t new_view = self.callbacks.view_draw_cb(&view_data.prescalers);
+        view_switch(new_view);
+    }
 }
 
-Adafruit_SSD1306 *view_get_display()
+Adafruit_SSD1306 *view_get_display() { return &self.display; }
+
+void view_button_event(struct lwbtn *lw, struct lwbtn_btn *btn,
+                       lwbtn_evt_t evt)
 {
-    return &self.display;
+    if (self.callbacks.view_button_event_cb != NULL)
+    {
+        view_t new_view = self.callbacks.view_button_event_cb(lw, btn, evt);
+        view_switch(new_view);
+    }
 }
 
-// void view_check_new_screen()
-// {
-//     if (self.callbacks.view_draw_cb != NULL)
-//     {
-//         view_t new_view = self.callbacks.view_draw_cb(&view_data.prescalers);
-//         if (new_view != self.current_view)
-//         {
-//             s_switch_view(new_view);
-//         }
-//     }
-// }
+void view_switch(view_t new_view)
+{
+    if (self.current_view == new_view)
+    {
+        return;
+    }
+
+    if (self.callbacks.view_on_exit_cb != NULL)
+    {
+        self.callbacks.view_on_exit_cb();
+    }
+
+    // Reset state (and add init)
+    memset(&view_data, 0, sizeof(view_data));
+    view_data.prescalers.doInit = true;
+
+    self.callbacks = s_get_callbacks(new_view);
+    if (self.callbacks.view_init != NULL)
+    {
+        self.callbacks.view_init(&self.display);
+    }
+    self.current_view = new_view;
+}

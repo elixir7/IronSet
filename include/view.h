@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "lwbtn.h"
-#include "button.h"
 
 // OLED
 #define SCREEN_WIDTH 128    // OLED display width, in pixels
@@ -51,47 +50,37 @@ typedef struct
 
 typedef struct
 {
-    // union {
-    //     struct {
-    //         int16_t drawn_temp;
-    //         int16_t drawn_target;
-    //         uint8_t drawn_state;
-    //     } timer_view;
-    // };
     view_prescalers_t prescalers;
 } view_data_t;
 
 extern view_data_t view_data;
 
-/**
- * @brief enum of all available views
- *
- */
 typedef enum
 {
+    eVIEW_NONE,
     eVIEW_DASHBOARD,
     eVIEW_TIMER,
     eVIEW_TEMP
 } view_t;
 
-/**
- * @brief callbacks for the different views
- */
 typedef struct
 {
+    void (*view_init)(Adafruit_SSD1306 *display);
     view_t (*view_draw_cb)(view_prescalers_t *prescalers);
-    view_t (*view_button_type_event_cb)(button_type_e type, uint16_t time_held, button_press_state_t press_state);
+    view_t (*view_button_event_cb)(struct lwbtn *lw, struct lwbtn_btn *btn, lwbtn_evt_t evt);
     void (*view_on_exit_cb)(void);
 } view_callbacks_t;
 
+// ============ View callbacks
 // view_callbacks_t dash_view_set_callbacks();
 view_callbacks_t timer_view_set_callbacks();
-// view_callbacks_t temp_view_set_callbacks();
+view_callbacks_t controller_view_set_callbacks();
 
 // public
 void view_init();
 void view_update();
 Adafruit_SSD1306 *view_get_display();
-void view_button_event(struct lwbtn *lw, struct lwbtn_btn *btn, lwbtn_evt_t evt)
+void view_button_event(struct lwbtn *lw, struct lwbtn_btn *btn, lwbtn_evt_t evt);
+void view_switch(view_t new_view);
 
 #endif

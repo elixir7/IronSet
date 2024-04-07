@@ -9,7 +9,7 @@ void settings_init(void)
 {
     EEPROM.get(0, settings);
 
-    settings.screen.current = eSCREEN_TIMER;
+    settings.button.hold_off = 10;
 }
 
 settings_t *settings_get(void)

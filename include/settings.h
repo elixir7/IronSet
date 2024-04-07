@@ -9,25 +9,21 @@ typedef struct
 typedef struct
 {
     int target;
+    int current;
+    int P;
+    int I;
+    int D;
 } controller_t;
 
-typedef enum
-{
-    eSCREEN_DASHBOARD = 0,
-    eSCREEN_TIMER,
-    eSCREEN_CONTROLLER
-} screen_e;
-
-typedef struct
-{
-    screen_e current;
-} screen_t;
+typedef struct {
+    int hold_off;
+}button_settings_t;
 
 typedef struct
 {
     hold_timer_t hold_timer;
     controller_t controller;
-    screen_t screen;
+    button_settings_t button;
 } settings_t;
 
 void settings_init(void);
