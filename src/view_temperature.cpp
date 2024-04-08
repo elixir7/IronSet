@@ -31,7 +31,7 @@
 /* ================================================================================================================== */
 static int    screen_timer = 0;
 static bool   in_edit_mode = false;
-static view_t view_self = eVIEW_TIMER;
+static view_t view_self = eVIEW_TEMP;
 
 /* ================================================================================================================== */
 /* [PFDE] Private functions declaration                                                                               */
@@ -48,11 +48,10 @@ static void s_draw(Adafruit_SSD1306* display) {
         display->setTextSize(2);
         display->setCursor(15, 15);
         display->setTextColor(SSD1306_WHITE, SSD1306_BLACK);
-        display->printf(
-            F("%2d.%d "), settings_get()->hold_timer.duration / 1000, (settings_get()->hold_timer.duration % 1000) / 100
-        );
+        display->printf(F("%3d "), settings_get()->controller.target);
         display->setCursor(SCREEN_WIDTH / 2 + 2, 15);
-        display->print("s");
+        display->print((char)247);
+        display->print("C");
     } else if (in_edit_mode) {
         display->fillRect(0, 15, SCREEN_WIDTH / 2, SCREEN_HEIGHT - 15, SSD1306_BLACK);
     }
@@ -71,7 +70,7 @@ static view_t s_draw_cb(view_prescalers_t* prescalers, Adafruit_SSD1306* display
         display->setTextSize(1);
         display->setTextColor(SSD1306_WHITE);
         display->setCursor(0, 0);
-        display->println(F("Set hold timer"));
+        display->println(F("Set temperature"));
         display->display();
         s_draw(display);
     }
@@ -109,15 +108,15 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     // Handle button events when in edit mode
     if (evt == LWBTN_EVT_ONPRESS) {
         if (type == BTN_UP) {
-            INC_WITH_VAL_TO_MAX(settings_get()->hold_timer.duration, 11000, 100);
+            INC_WITH_VAL_TO_MAX(settings_get()->controller.target, 250, 1);
         } else if (type == BTN_DOWN) {
-            DEC_WITH_VAL_TO_MIN(settings_get()->hold_timer.duration, 100, 100);
+            DEC_WITH_VAL_TO_MIN(settings_get()->controller.target, 50, 1);
         }
     } else if (evt == LWBTN_EVT_KEEPALIVE) {
         if (type == BTN_UP) {
-            INC_WITH_VAL_TO_MAX(settings_get()->hold_timer.duration, 11000, 100);
+            INC_WITH_VAL_TO_MAX(settings_get()->controller.target, 250, 1);
         } else if (type == BTN_DOWN) {
-            DEC_WITH_VAL_TO_MIN(settings_get()->hold_timer.duration, 100, 100);
+            DEC_WITH_VAL_TO_MIN(settings_get()->controller.target, 50, 1);
         }
     }
 
@@ -127,7 +126,7 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
 /* ================================================================================================================== */
 /* [FUNC] Functions implementations                                                                                   */
 /* ================================================================================================================== */
-view_callbacks_t timer_view_set_callbacks() {
+view_callbacks_t temperature_view_set_callbacks() {
     return (view_callbacks_t
     ){.view_init = NULL,
       .view_draw_cb = s_draw_cb,
