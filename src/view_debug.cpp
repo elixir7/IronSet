@@ -54,7 +54,7 @@ static void s_draw(Adafruit_SSD1306* display) {
     display->printf(F("24V: %2d.%d V"), u_filt / 1000, (u_filt % 1000) / 100);
 
     // Temp measurement
-    int t_filt = sensor_manager_get(eSENSOR_NTC);
+    int t_filt = sensor_manager_get(eSENSOR_TEMP);
     display->setCursor(0, 20);
     display->printf(F("T: %2d.%d "), t_filt / 1000, (t_filt % 1000) / 100);
     display->print((char)247);
@@ -91,9 +91,9 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     // Handle when not in edit mode (go to other screens)
     if (!in_edit_mode) {
         if (evt == LWBTN_EVT_ONPRESS) {
-            if (type == BTN_UP) {
+            if (type == eBTN_UP) {
                 return view_get_prev();
-            } else if (type == BTN_DOWN) {
+            } else if (type == eBTN_DOWN) {
                 return view_get_next();
             }
         }

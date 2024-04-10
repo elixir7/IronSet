@@ -86,7 +86,7 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     button_type_e type = *((button_type_e*)btn->arg);
 
     // Handle select button
-    if (evt == LWBTN_EVT_ONPRESS && type == BTN_SELECT) {
+    if (evt == LWBTN_EVT_ONPRESS && type == eBTN_SELECT) {
         if (in_edit_mode) {
             settings_save();
         }
@@ -97,9 +97,9 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     // Handle when not in edit mode (go to other screens)
     if (!in_edit_mode) {
         if (evt == LWBTN_EVT_ONPRESS) {
-            if (type == BTN_UP) {
+            if (type == eBTN_UP) {
                 return view_get_prev();
-            } else if (type == BTN_DOWN) {
+            } else if (type == eBTN_DOWN) {
                 return view_get_next();
             }
         }
@@ -108,15 +108,15 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
 
     // Handle button events when in edit mode
     if (evt == LWBTN_EVT_ONPRESS) {
-        if (type == BTN_UP) {
+        if (type == eBTN_UP) {
             INC_WITH_VAL_TO_MAX(settings_get()->hold_timer.duration, 11000, 100);
-        } else if (type == BTN_DOWN) {
+        } else if (type == eBTN_DOWN) {
             DEC_WITH_VAL_TO_MIN(settings_get()->hold_timer.duration, 100, 100);
         }
     } else if (evt == LWBTN_EVT_KEEPALIVE) {
-        if (type == BTN_UP) {
+        if (type == eBTN_UP) {
             INC_WITH_VAL_TO_MAX(settings_get()->hold_timer.duration, 11000, 100);
-        } else if (type == BTN_DOWN) {
+        } else if (type == eBTN_DOWN) {
             DEC_WITH_VAL_TO_MIN(settings_get()->hold_timer.duration, 100, 100);
         }
     }

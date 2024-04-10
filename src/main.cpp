@@ -5,6 +5,7 @@
 #include "Arduino.h"
 
 #include "button.h"
+#include "controller.h"
 #include "graphics.h"
 #include "pinmap.h"
 #include "pitches.h"
@@ -20,7 +21,7 @@ void playMelody(void) {
         // to calculate the note duration, take one second divided by the note type.
         // e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
         int noteDuration = 1000 / noteDurations[thisNote];
-        tone(BUZZER, melody[thisNote], noteDuration);
+        tone(eIO_BUZZER, melody[thisNote], noteDuration);
 
         // to distinguish the notes, set a minimum time between them.
         // the note's duration + 30% seems to work well:
@@ -28,29 +29,28 @@ void playMelody(void) {
         delay(pauseBetweenNotes);
 
         // stop the tone playing:
-        noTone(BUZZER);
+        noTone(eIO_BUZZER);
     }
 }
 
 void setup() {
     settings_init();
 
-    pinMode(LED_B, OUTPUT);
-    pinMode(LED_R, OUTPUT);
-    pinMode(BUZZER, OUTPUT);
-
-    pinMode(HEAT1, OUTPUT);
-    pinMode(HEAT2, OUTPUT);
+    pinMode(eIO_LEB_B, OUTPUT);
+    pinMode(eIO_LED_R, OUTPUT);
+    pinMode(eIO_BUZZER, OUTPUT);
 
     button_init();
     sensor_manager_init();
+    controller_init();
     view_init();
+
     //playMelody();
 }
 
 void loop() {
     delay(20);
-    digitalToggle(LED_R);
+    digitalToggle(eIO_LED_R);
     button_update();
     sensor_manager_update();
     view_update();

@@ -85,7 +85,7 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     button_type_e type = *((button_type_e*)btn->arg);
 
     // Handle select button
-    if (evt == LWBTN_EVT_ONPRESS && type == BTN_SELECT) {
+    if (evt == LWBTN_EVT_ONPRESS && type == eBTN_SELECT) {
         if (in_edit_mode) {
             settings_save();
         }
@@ -96,27 +96,29 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     // Handle when not in edit mode (go to other screens)
     if (!in_edit_mode) {
         if (evt == LWBTN_EVT_ONPRESS) {
-            if (type == BTN_UP) {
+            if (type == eBTN_UP) {
                 return view_get_prev();
-            } else if (type == BTN_DOWN) {
+            } else if (type == eBTN_DOWN) {
                 return view_get_next();
             }
         }
         return view_self;
     }
 
+    controller_settings_t* controller = &settings_get()->controller;
+
     // Handle button events when in edit mode
     if (evt == LWBTN_EVT_ONPRESS) {
-        if (type == BTN_UP) {
-            INC_WITH_VAL_TO_MAX(settings_get()->controller.target, 250, 1);
-        } else if (type == BTN_DOWN) {
-            DEC_WITH_VAL_TO_MIN(settings_get()->controller.target, 50, 1);
+        if (type == eBTN_UP) {
+            INC_WITH_VAL_TO_MAX(controller->target, controller->max, 1);
+        } else if (type == eBTN_DOWN) {
+            DEC_WITH_VAL_TO_MIN(controller->target, controller->min, 1);
         }
     } else if (evt == LWBTN_EVT_KEEPALIVE) {
-        if (type == BTN_UP) {
-            INC_WITH_VAL_TO_MAX(settings_get()->controller.target, 250, 1);
-        } else if (type == BTN_DOWN) {
-            DEC_WITH_VAL_TO_MIN(settings_get()->controller.target, 50, 1);
+        if (type == eBTN_UP) {
+            INC_WITH_VAL_TO_MAX(controller->target, controller->max, 1);
+        } else if (type == eBTN_DOWN) {
+            DEC_WITH_VAL_TO_MIN(controller->target, controller->min, 1);
         }
     }
 

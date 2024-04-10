@@ -54,7 +54,7 @@ void view_init() {
     self.display = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
     if (!self.display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
         while (1) {
-            digitalWrite(LED_R, HIGH);
+            digitalWrite(eIO_LED_R, HIGH);
         }
     }
 
@@ -119,7 +119,7 @@ void view_switch(view_t new_view) {
 
     self.callbacks = s_get_callbacks(new_view);
     if (self.callbacks.view_init != NULL) {
-        self.callbacks.view_init(&self.display);
+        self.callbacks.view_init();
     }
     self.current_view = new_view;
 }

@@ -51,7 +51,7 @@ typedef struct {
 typedef enum { eVIEW_DASHBOARD = 0, eVIEW_TEMP, eVIEW_TIMER, eVIEW_DEBUG, eVIEW_END } view_t;
 
 typedef struct {
-    void (*view_init)(Adafruit_SSD1306* display);
+    void (*view_init)(void);
     view_t (*view_draw_cb)(view_prescalers_t* prescalers, Adafruit_SSD1306* display);
     view_t (*view_button_event_cb)(struct lwbtn* lw, struct lwbtn_btn* btn, lwbtn_evt_t evt);
     void (*view_on_exit_cb)(void);
