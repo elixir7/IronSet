@@ -1,9 +1,9 @@
 #include <Arduino.h>
+#include <EEPROM.h>
+#include "buzzer.h"
 #include "pinmap.h"
 #include "pitches.h"
 #include "settings.h"
-
-#include <EEPROM.h>
 
 static settings_t settings;
 
@@ -19,6 +19,7 @@ void settings_factory_reset(void) {
 void settings_init(void) {
     EEPROM.get(0, settings);
 
+    // TODO: if settings are all 0 it should automatically force factory reset values
     // settings_factory_reset();
 }
 
@@ -28,10 +29,5 @@ settings_t* settings_get(void) {
 
 void settings_save(void) {
     EEPROM.put(0, settings);
-    tone(eIO_BUZZER, NOTE_A6, 25);
-    delay(50);
-    tone(eIO_BUZZER, NOTE_C6, 25);
-    delay(50);
-    tone(eIO_BUZZER, NOTE_E6, 25);
-    delay(50);
+    buzzer_success();
 }

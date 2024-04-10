@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "button.h"
+#include "buzzer.h"
 #include "filter.h"
 #include "ntc.h"
 #include "pinmap.h"
@@ -87,6 +88,10 @@ static view_t s_draw_cb(view_prescalers_t* prescalers, Adafruit_SSD1306* display
 
 static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lwbtn_evt_t evt) {
     button_type_e type = *((button_type_e*)btn->arg);
+
+    if (evt == LWBTN_EVT_ONPRESS || evt == LWBTN_EVT_KEEPALIVE) {
+        buzzer_button_press();
+    }
 
     // Handle when not in edit mode (go to other screens)
     if (!in_edit_mode) {

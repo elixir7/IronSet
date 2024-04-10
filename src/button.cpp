@@ -27,24 +27,11 @@ static uint8_t s_get_states(struct lwbtn* lw, struct lwbtn_btn* btn) {
 }
 
 static void s_button_event(struct lwbtn* lw, struct lwbtn_btn* btn, lwbtn_evt_t evt) {
-    if (evt == LWBTN_EVT_ONPRESS) {
-        tone(eIO_BUZZER, NOTE_C7, 25);
-        digitalWrite(eIO_LEB_B, HIGH);
-        delay(25);
-        digitalWrite(eIO_LEB_B, LOW);
-        view_button_event(lw, btn, evt);
-    } else if (evt == LWBTN_EVT_KEEPALIVE && btn->keepalive.cnt >= settings_get()->button.hold_off) {
-        // Only fire keep alive after a delay
-        // tone(eIO_BUZZER, NOTE_C7, 25);
-        digitalWrite(eIO_LEB_B, HIGH);
-        delay(25);
-        digitalWrite(eIO_LEB_B, LOW);
-        view_button_event(lw, btn, evt);
-    } else if (evt == LWBTN_EVT_ONRELEASE) {
-        view_button_event(lw, btn, evt);
-    } else if (evt == LWBTN_EVT_ONCLICK) {
-        view_button_event(lw, btn, evt);
+    if (evt == LWBTN_EVT_KEEPALIVE && btn->keepalive.cnt < settings_get()->button.hold_off) {
+        return;
     }
+
+    view_button_event(lw, btn, evt);
 }
 
 //======================================================
