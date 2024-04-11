@@ -25,7 +25,7 @@ void setup() {
     sensor_manager_init();
     controller_init();
     view_init();
-    buzzer_startup();
+    // buzzer_startup();
 }
 
 void loop() {

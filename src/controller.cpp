@@ -52,13 +52,17 @@ void controller_init(void) {
 }
 
 void controller_update(void) {
-    // if (settings_get()->controller.enabled) {
-    float T_measurement = sensor_manager_get(eSENSOR_TEMP) / 1000;
-    float T_setpoint = settings_get()->controller.target;
-    float output = pid_update(&controller, T_setpoint, T_measurement);
-    int   analog_output = i_round(output * 255); // Round
-    analogWrite(eIO_HEAT1, analog_output);
-    analogWrite(eIO_HEAT2, analog_output);
-    analogWriteFrequency(100);
-    // }
+    if (settings_get()->controller.enabled) {
+        float T_measurement = sensor_manager_get(eSENSOR_TEMP) / 1000;
+        float T_setpoint = settings_get()->controller.target;
+        float output = pid_update(&controller, T_setpoint, T_measurement);
+        int   analog_output = i_round(output * 255); // Round
+        analogWrite(eIO_HEAT1, analog_output);
+        analogWrite(eIO_HEAT2, analog_output);
+        analogWriteFrequency(100);
+    } else {
+        analogWrite(eIO_HEAT1, 0);
+        analogWrite(eIO_HEAT2, 0);
+        analogWriteFrequency(100);
+    }
 }

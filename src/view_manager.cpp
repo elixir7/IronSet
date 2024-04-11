@@ -17,8 +17,8 @@ typedef struct {
     uint8_t          prescaler;
 } view_manager_t;
 
-view_manager_t self;
-view_data_t    view_data;
+static view_manager_t self;
+view_data_t           view_data;
 
 //  =========================================================
 
@@ -37,9 +37,9 @@ static view_callbacks_t s_get_callbacks(view_t view) {
 }
 
 static void s_show_startup(void) {
-    // Show startup screen
+    // Show startup scree
     self.display.clearDisplay();
-    self.display.drawBitmap(0, 0, seel2, LOGO_WIDTH, LOGO_HEIGHT, 1);
+    self.display.drawBitmap(0, 0, bitmap_heat.bitmap, bitmap_heat.width, bitmap_heat.height, 1);
     self.display.setTextSize(2);
     self.display.setTextColor(SSD1306_WHITE);
     self.display.setCursor(40, 10);
@@ -59,8 +59,8 @@ void view_init() {
     }
 
     s_show_startup();
-    self.current_view = eVIEW_END;
-    // required since the requested dashboard view on the next line is the same as the uninitialised variable
+    self.current_view =
+        eVIEW_END; // required since the requested dashboard view on the next line is the same as the uninitialised variable
     view_switch(eVIEW_DASHBOARD);
 }
 

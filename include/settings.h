@@ -3,6 +3,7 @@
 
 typedef struct {
     int duration; // [ms]
+    // TODO: Add min/max
 } hold_timer_settings_t;
 
 typedef struct {

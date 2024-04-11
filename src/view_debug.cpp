@@ -1,8 +1,10 @@
-
-
 /* ================================================================================================================== */
 /* [INCL] Includes                                                                                                    */
 /* ================================================================================================================== */
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -18,10 +20,6 @@
 #include "settings.h"
 #include "view.h"
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <Arduino.h>
-
 /* ================================================================================================================== */
 /* [DEFS] Defines                                                                                                     */
 /* ================================================================================================================== */
@@ -34,7 +32,6 @@
 /* [GLOB] Global variables                                                                                            */
 /* ================================================================================================================== */
 static int    screen_timer = 0;
-static bool   in_edit_mode = false;
 static view_t view_self = eVIEW_DEBUG;
 
 /* ================================================================================================================== */
@@ -89,20 +86,21 @@ static view_t s_draw_cb(view_prescalers_t* prescalers, Adafruit_SSD1306* display
 static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lwbtn_evt_t evt) {
     button_type_e type = *((button_type_e*)btn->arg);
 
-    if (evt == LWBTN_EVT_ONPRESS || evt == LWBTN_EVT_KEEPALIVE) {
+    // Factory reset
+    if (evt == LWBTN_EVT_KEEPALIVE && type == eBTN_SELECT && btn->keepalive.cnt == settings_get()->button.hold_off) {
+        settings_factory_reset();
+        return view_self;
+    }
+
+    // Play sound on up/down press
+    if ((evt == LWBTN_EVT_ONPRESS || evt == LWBTN_EVT_KEEPALIVE) && (type == eBTN_UP || type == eBTN_DOWN)) {
         buzzer_button_press();
     }
 
-    // Handle when not in edit mode (go to other screens)
-    if (!in_edit_mode) {
-        if (evt == LWBTN_EVT_ONPRESS) {
-            if (type == eBTN_UP) {
-                return view_get_prev();
-            } else if (type == eBTN_DOWN) {
-                return view_get_next();
-            }
-        }
-        return view_self;
+    if (type == eBTN_UP && evt == LWBTN_EVT_ONPRESS) {
+        return view_get_prev();
+    } else if (type == eBTN_DOWN && evt == LWBTN_EVT_ONPRESS) {
+        return view_get_next();
     }
 
     return view_self;
