@@ -25,6 +25,7 @@ void setup() {
     sensor_manager_init();
     controller_init();
     view_init();
+    buzzer_success(); // Play sound when star
     // buzzer_startup();
 }
 

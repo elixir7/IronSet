@@ -2,7 +2,8 @@
     "files.associations": {
         "*.h": "c",
         "view_timer": "c",
-        "random": "cpp"
+        "random": "cpp",
+        "glcdfont.c": "cpp"
     },
     "C_Cpp.clang_format_style": "file",
     "C_Cpp.clang_format_fallbackStyle": "Visual Studio"

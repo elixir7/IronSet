@@ -52,5 +52,4 @@ void buzzer_custom_non_blocking(int frequency, int duration) {
 void buzzer_custom_blocking(int frequency, int duration) {
     tone(eIO_BUZZER, frequency, duration);
     delay(duration);
-    noTone(eIO_BUZZER);
 }

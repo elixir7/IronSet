@@ -26,7 +26,10 @@
 /* ================================================================================================================== */
 /* [DEFS] Defines                                                                                                     */
 /* ================================================================================================================== */
-
+#define Y_STATUS        (13)
+#define X_TIMER_SETTING (SCREEN_WIDTH - 45)
+#define FONT_HEIGHT     (7)
+#define BAR_HEIGHT      (5)
 /* ================================================================================================================== */
 /* [TYPE] Type definitions                                                                                            */
 /* ================================================================================================================== */
@@ -85,11 +88,14 @@ static const char* s_state_to_str(state_e view) {
     }
 }
 
-static void s_transition_to_state(state_e state) {
-    self.state = state;
-}
-
 static void s_state_machine_update(void) {
+
+    // Status
+    self.display->fillRect(
+        0, Y_STATUS, SCREEN_WIDTH / 2, FONT_HEIGHT + 5, SSD1306_BLACK
+    ); // Height must be increased due to  chars like g
+    self.display->setCursor(0, Y_STATUS);
+    self.display->printf(F("%s"), s_state_to_str(self.state));
 
     int T_current = sensor_manager_get(eSENSOR_TEMP);
     int T_target = settings_get()->controller.target;
@@ -110,9 +116,9 @@ static void s_state_machine_update(void) {
             break;
 
         case eSTATE_FUSING:
-            self.display->setCursor(SCREEN_WIDTH - 60, 10);
+            self.display->setCursor(0, Y_STATUS);
             self.display->printf(
-                F("%2d.%d/%2d.%ds"),
+                F("Fusing     %2d.%d/%2d.%ds"),
                 self.timer / 1000,
                 (self.timer % 1000) / 100,
                 settings_get()->hold_timer.duration / 1000,
@@ -129,6 +135,7 @@ static void s_state_machine_update(void) {
             if (self.sw_release) {
                 s_transition_to_fail();
             } else if (self.timer >= settings_get()->hold_timer.duration) {
+                self.display->display(); // Must redraw when timer hits timeout since transition will ignore the draw.
                 s_transition_to_success();
             } else {
                 int now = millis();
@@ -138,50 +145,29 @@ static void s_state_machine_update(void) {
             break;
 
         case eSTATE_SUCCESS:
-            if (self.status_timer < 150) {
-                // Blink the status
-                self.display->setCursor(0, 10);
-                self.display->printf(F("Status: "));
-
-                // Blink
-                if ((self.status_timer % 20) < 10) {
-                    self.display->printf(F("%s"), "Success");
-                } else {
-                    self.display->printf(F("%s"), "       ");
-                }
-
-                self.status_timer++;
-            } else if (self.status_timer >= 150) {
-                s_transition_to_ready();
-            }
-            break;
-
         case eSTATE_FAIL:
-            if (self.status_timer < 150) {
-                // Blink the status
-                self.display->setCursor(0, 10);
-                self.display->printf(F("Status: "));
-
-                // Blink
-                if ((self.status_timer % 20) < 10) {
-                    self.display->printf(F("%s"), "Fail");
-                } else {
-                    self.display->printf(F("%s"), "                     ");
-                }
-
-                self.status_timer++;
-            } else if (self.status_timer >= 150) {
+            if (self.status_timer >= 100) {
                 s_transition_to_ready();
+                break;
             }
+
+            // Blink
+            self.display->setCursor(0, Y_STATUS);
+            if ((self.status_timer % 20) < 10) {
+                self.display->printf(F("%s"), s_state_to_str(self.state));
+            } else {
+                self.display->printf(F("%s"), "       ");
+            }
+
+            self.status_timer++;
             break;
 
         default: break;
     }
+}
 
-    // How do I print the flashing message?
-
-    // Fill bottom of screen with bar indicating timer
-    if (self.state == eSTATE_FUSING) {}
+static void s_transition_to_state(state_e state) {
+    self.state = state;
 }
 
 static void s_transition_to_heating(void) {
@@ -189,6 +175,8 @@ static void s_transition_to_heating(void) {
 }
 
 static void s_transition_to_ready(void) {
+    s_transition_to_state(eSTATE_READY);
+
     buzzer_custom_blocking(NOTE_C7, 50);
     delay(50);
     buzzer_custom_blocking(NOTE_C7, 50);
@@ -196,12 +184,14 @@ static void s_transition_to_ready(void) {
     buzzer_custom_blocking(NOTE_C7, 50);
     delay(50);
 
+    self.display->fillRect(
+        SCREEN_WIDTH / 2, Y_STATUS, SCREEN_WIDTH / 2, FONT_HEIGHT, SSD1306_BLACK
+    ); // Reset  last  timer time
+    self.display->fillRect(0, SCREEN_HEIGHT - BAR_HEIGHT, SCREEN_WIDTH, BAR_HEIGHT, SSD1306_BLACK); // Reset timer bar
     self.sw_press = false;
-    s_transition_to_state(eSTATE_READY);
 }
 
 static void s_transition_to_fusing(void) {
-    self.display->fillRect(0, SCREEN_HEIGHT - 5, SCREEN_WIDTH, 5, SSD1306_BLACK); // Reset timer bar
     self.sw_release = false;
     self.timer = 0;
     self.last_millis = millis();
@@ -222,13 +212,14 @@ static void s_transition_to_fail(void) {
 
 static void s_init_cb(void) {
     settings_get()->controller.enabled = true;
-    buzzer_success();
 }
 
 static void s_draw(Adafruit_SSD1306* display) {
-
     display->setTextSize(1);
     display->setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+
+    // Update
+    s_state_machine_update();
 
     // Temperature
     int T_current = sensor_manager_get(eSENSOR_TEMP);
@@ -240,23 +231,11 @@ static void s_draw(Adafruit_SSD1306* display) {
     display->print("C");
 
     // Timer
-    int x_clock = SCREEN_WIDTH - 45;
-    display->drawBitmap(x_clock, 0, bitmap_clock.bitmap, bitmap_clock.width, bitmap_clock.height, 1);
-    display->setCursor(x_clock + bitmap_clock.width + 5, 0);
+    display->drawBitmap(X_TIMER_SETTING, 0, bitmap_clock.bitmap, bitmap_clock.width, bitmap_clock.height, 1);
+    display->setCursor(X_TIMER_SETTING + bitmap_clock.width, 0);
     display->printf(
         F("%2d.%ds"), settings_get()->hold_timer.duration / 1000, (settings_get()->hold_timer.duration % 1000) / 100
     );
-
-    //Status
-    display->setCursor(0, 10);
-    display->printf(F("Status:"));
-    display->printf(F("%s"), s_state_to_str(self.state));
-
-    s_state_machine_update(); // Can also owerwrite draw stuff
-
-    // else {
-    //     display->fillRect(SCREEN_WIDTH - 45, 10, 45, 9, SSD1306_BLACK); // Must clear because fusing adds timer stuff
-    // }
 
     display->display();
 }
@@ -266,6 +245,8 @@ static view_t s_draw_cb(view_prescalers_t* prescalers, Adafruit_SSD1306* display
     if (prescalers->doInit) {
         prescalers->doInit = false;
         self.display = display;
+
+        s_transition_to_state(eSTATE_HEATING);
         display->clearDisplay();
         display->display();
         s_draw(display);
