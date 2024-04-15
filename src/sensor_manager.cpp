@@ -21,6 +21,7 @@ typedef struct {
     bool           initial;
     ntc_settings_t ntc;
     filter_lp_t    u_filter;
+    filter_lp_t    r_filter;
 } sensor_manager_t;
 
 static sensor_manager_t self;
@@ -60,6 +61,14 @@ void sensor_manager_update(void) {
         filter_lp_init(&self.ntc.filter, NTC_kelvin_2_mili_celcius(temp), SHIFT_DEFAULT);
     } else {
         filter_lp_update(&self.ntc.filter, NTC_kelvin_2_mili_celcius(temp));
+        // filter_lp_update(&self.ntc.filter, 400 * 1000);
+    }
+
+    uint32_t R_ntc = self.ntc.settings.resistance_pullup * v_mv / (VCC * 1000 - v_mv);
+    if (self.initial) {
+        filter_lp_init(&self.r_filter, R_ntc, SHIFT_DEFAULT + 2);
+    } else {
+        filter_lp_update(&self.r_filter, R_ntc);
     }
 
     if (self.initial) {
@@ -71,6 +80,7 @@ int32_t sensor_manager_get(sensor_e type) {
     switch (type) {
         case eSENSOR_TEMP: return filter_lp_get(&self.ntc.filter);
         case eSENSOR_24V: return filter_lp_get(&self.u_filter);
+        case eSENSOR_R: return filter_lp_get(&self.r_filter);
         default: return 0;
     }
 

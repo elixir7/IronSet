@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef enum { eSENSOR_TEMP = 0, eSENSOR_24V } sensor_e;
+typedef enum { eSENSOR_TEMP = 0, eSENSOR_24V, eSENSOR_R } sensor_e;
 
 void    sensor_manager_init(void);
 void    sensor_manager_update(void);

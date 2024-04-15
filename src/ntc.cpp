@@ -1,9 +1,8 @@
 #include "ntc.h"
+#include "math.h"
 #include "math_custom.h"
 
 #define ABSOLUTE_ZERO_KELVIN (273.15f)
-#define TEMP_MIN_KELVIN      (ABSOLUTE_ZERO_KELVIN - 100)
-#define TEMP_MAX_KELVIN      (ABSOLUTE_ZERO_KELVIN + 200)
 
 float NTC_voltage_to_temperature(NTC_t* ntc, uint16_t v_mv, uint16_t v_vdd_mv) {
     if (ntc->resistance_pullup == 0) {
@@ -36,11 +35,6 @@ float NTC_resistance_to_temperature(uint32_t R, NTC_beta_coeff_t* beta_coeff) {
 
     // Beta Equation
     float T = 1 / (ln((float)R / R0) / B + 1 / T0);
-
-    // Reasonable output
-    if (T < TEMP_MIN_KELVIN || T > TEMP_MAX_KELVIN) {
-        return -1.0f;
-    }
 
     return T;
 }

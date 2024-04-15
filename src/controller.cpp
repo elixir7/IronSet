@@ -59,10 +59,10 @@ void controller_update(void) {
         int   analog_output = i_round(output * 255); // Round
         analogWrite(eIO_HEAT1, analog_output);
         analogWrite(eIO_HEAT2, analog_output);
-        analogWriteFrequency(100);
+        analogWriteFrequency(1000);
     } else {
-        analogWrite(eIO_HEAT1, 0);
-        analogWrite(eIO_HEAT2, 0);
-        analogWriteFrequency(100);
+        // analogWrite(eIO_HEAT1, 0);
+        // analogWrite(eIO_HEAT2, 0);
+        // analogWriteFrequency(1000);
     }
 }
