@@ -66,11 +66,11 @@ static void s_draw(Adafruit_SSD1306* display) {
     screen_timer += 1;
 }
 
-float  duty = 0;
-double T = 0;
-double V = 0;
-float  R = 0;
-int    index_duty = 0;
+// float  duty = 0;
+// double T = 0;
+// double V = 0;
+// float  R = 0;
+// int    index_duty = 0;
 
 static view_t s_draw_cb(view_prescalers_t* prescalers, Adafruit_SSD1306* display) {
 
@@ -89,9 +89,9 @@ static view_t s_draw_cb(view_prescalers_t* prescalers, Adafruit_SSD1306* display
     if (prescalers->do50) {
         prescalers->do50 = false;
         s_draw(display);
-        T = sensor_manager_get(eSENSOR_TEMP) / ((float)1000);
-        V = sensor_manager_get(eSENSOR_24V) / ((float)1000);
-        R = sensor_manager_get(eSENSOR_R);
+        // T = sensor_manager_get(eSENSOR_TEMP) / ((float)1000);
+        // V = sensor_manager_get(eSENSOR_24V) / ((float)1000);
+        // R = sensor_manager_get(eSENSOR_R);
     }
     return view_self;
 }
@@ -115,16 +115,23 @@ static view_t s_button_type_event_cb(struct lwbtn* lw, struct lwbtn_btn* btn, lw
     } else if (type == eBTN_DOWN && evt == LWBTN_EVT_ONPRESS) {
         return view_get_next();
     } else if (type == eBTN_SELECT && evt == LWBTN_EVT_ONPRESS) {
-        index_duty = (index_duty + 1) % 10;
-        duty = 0.1 * index_duty;
+        // if (duty < 0.1) {
+        //     duty = 0.9;
+        // } else {
+        //     duty = 0;
+        // }
+
+        // index_duty = (index_duty + 1) % 10;
+        // duty = 0.1 * index_duty;
+
         // if (duty) {
         //     duty = 0;
         // } else {
         //     duty = 0.90;
         // }
-        analogWrite(eIO_HEAT1, 255 * duty);
-        analogWrite(eIO_HEAT2, 255 * duty);
-        analogWriteFrequency(10);
+        // analogWrite(eIO_HEAT1, 255 * duty);
+        // analogWrite(eIO_HEAT2, 255 * duty);
+        // analogWriteFrequency(10);
     }
 
     return view_self;

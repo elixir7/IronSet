@@ -31,8 +31,8 @@ void setup() {
 
 void loop() {
     button_update();
-    sensor_manager_update();
     view_update();
+    sensor_manager_update();
 
     digitalToggle(eIO_LED_R);
     delay(20);

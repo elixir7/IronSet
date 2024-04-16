@@ -9,8 +9,8 @@ static settings_t settings;
 
 void settings_factory_reset(void) {
     // Write default settings
-    settings.hold_timer.duration = 5 * 1000;
-    settings.controller = (controller_settings_t){.enabled = true, .target = 20, .max = 300, .min = 0};
+    settings.hold_timer.duration = 8 * 1000;
+    settings.controller = (controller_settings_t){.enabled = true, .target = 180, .max = 300, .min = 0};
     settings.button.hold_off = 10;
 
     settings_save();

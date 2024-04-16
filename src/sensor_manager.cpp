@@ -30,7 +30,9 @@ void sensor_manager_init(void) {
     pinMode(eIO_NTC, INPUT_ANALOG);
     pinMode(eIO_SENSE_24V, INPUT_ANALOG);
 
-    self.ntc.settings = {.beta_coeff = {.T0 = 25, .R0 = 100000, .beta = 4000}, .resistance_pullup = 4700};
+    self.ntc.settings = {
+        .beta_coeff = {.T0 = 25, .R0 = 100000, .beta = 4775}, .resistance_pullup = 4700
+    }; // See Matlab calibration from measurement data for beta estimation
 
     self.initial = true;
     sensor_manager_update();
@@ -61,12 +63,11 @@ void sensor_manager_update(void) {
         filter_lp_init(&self.ntc.filter, NTC_kelvin_2_mili_celcius(temp), SHIFT_DEFAULT);
     } else {
         filter_lp_update(&self.ntc.filter, NTC_kelvin_2_mili_celcius(temp));
-        // filter_lp_update(&self.ntc.filter, 400 * 1000);
     }
 
     uint32_t R_ntc = self.ntc.settings.resistance_pullup * v_mv / (VCC * 1000 - v_mv);
     if (self.initial) {
-        filter_lp_init(&self.r_filter, R_ntc, SHIFT_DEFAULT + 2);
+        filter_lp_init(&self.r_filter, R_ntc, SHIFT_DEFAULT);
     } else {
         filter_lp_update(&self.r_filter, R_ntc);
     }
